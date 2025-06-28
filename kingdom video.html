@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kingdom</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .video-container {
+            position: relative;
+        }
+        .remote-video {
+            background-color: #000;
+        }
+        .local-video {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 25%;
+            max-width: 200px;
+            background-color: #000;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .emoji-panel {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+        }
+        .emoji-popup {
+            position: absolute;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            animation: popup 1.5s;
+        }
+        @keyframes popup {
+            0% { transform: translate(-50%, 0); opacity: 0; }
+            20% { transform: translate(-50%, -30px); opacity: 1; }
+            80% { transform: translate(-50%, -30px); opacity: 1; }
+            100% { transform: translate(-50%, -60px); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white h-screen flex flex-col">
+    <header class="bg-gray-800 p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Kingdom</h1>
+            <div id="connection-status" class="flex items-center">
+                <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                <span>Disconnected</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col items-center justify-center p-4">
+        <div class="video-container w-full max-w-4xl h-96 mb-8 rounded-lg overflow-hidden">
+            <video id="remote-video" class="remote-video w-full h-full object-cover" autoplay playsinline></video>
+            <video id="local-video" class="local-video" autoplay playsinline muted></video>
+            
+            <div id="emoji-popup" class="emoji-popup text-5xl">👋</div>
+            <div id="emoji-panel" class="emoji-panel bg-gray-800 p-2 rounded-lg flex gap-2">
+                <button class="emoji-btn text-3xl hover:scale-110 transition-transform" data-emoji="👍">👍</button>
+                <button class="emoji-btn text-3xl hover:scale-110 transition-transform" data-emoji="😂">😂</button>
+                <button class="emoji-btn text-3xl hover:scale-110 transition-transform" data-emoji="❤️">❤️</button>
+                <button class="emoji-btn text-3xl hover:scale-110 transition-transform" data-emoji="😲">😲</button>
+                <button class="emoji-btn text-3xl hover:scale-110 transition-transform" data-emoji="👋">👋</button>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center mb-8" id="pre-connection">
+            <div class="mb-6">
+                <h2 class="text-xl mb-2">Select preferred gender:</h2>
+                <div class="flex gap-4">
+                    <label class="flex items-center">
+                        <input type="radio" name="gender" value="male" class="mr-2" checked>
+                        Male
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="gender" value="female" class="mr-2">
+                        Female
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="gender" value="both" class="mr-2">
+                        Both
+                    </label>
+                </div>
+            </div>
+
+            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/34075647-5f46-4959-afe9-e8f88ff838f4.png" alt="Illustration of two people video chatting through screens with colorful connection lines" class="mb-6 rounded-lg" />
+
+            <button id="start-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full text-lg transition-colors">
+                Start Chatting
+            </button>
+        </div>
+
+        <div id="controls" class="hidden bg-gray-800 p-4 rounded-lg flex gap-4">
+            <button id="emoji-btn" class="bg-yellow-600 hover:bg-yellow-700 text-white p-3 rounded-full transition-colors">
+                Emoji Reaction
+            </button>
+            <button id="mic-toggle" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full transition-colors">
+                Mute
+            </button>
+            <button id="video-toggle" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full transition-colors">
+                Hide Webcam
+            </button>
+            <button id="next-btn" class="bg-green-600 hover:bg-green-700 text-white p-3 rounded-full transition-colors">
+                Next Stranger
+            </button>
+            <button id="end-btn" class="bg-red-600 hover:bg-red-700 text-white p-3 rounded-full transition-colors">
+                End Call
+            </button>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 p-4 text-center text-gray-400">
+        <p>Connect with random people worldwide. Be respectful and kind© 2023 gpstech. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const remoteVideo = document.getElementById('remote-video');
+            const localVideo = document.getElementById('local-video');
+            const startBtn = document.getElementById('start-btn');
+            const emojiBtn = document.getElementById('emoji-btn');
+            const emojiPanel = document.getElementById('emoji-panel');
+            const emojiPopup = document.getElementById('emoji-popup');
+            const controls = document.getElementById('controls');
+            const preConnection = document.getElementById('pre-connection');
+            const connectionStatus = document.getElementById('connection-status');
+            const micToggle = document.getElementById('mic-toggle');
+            const videoToggle = document.getElementById('video-toggle');
+            const nextBtn = document.getElementById('next-btn');
+            const endBtn = document.getElementById('end-btn');
+            
+            // State variables
+            let localStream;
+            let peerConnection;
+            let selectedGender = 'male';
+            
+            // Gender selection
+            document.querySelectorAll('input[name="gender"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    selectedGender = e.target.value;
+                });
+            });
+            
+            // Simulated connection for demo purposes
+            startBtn.addEventListener('click', async () => {
+                try {
+                    // Get user media (in a real app, this would trigger WebRTC connection)
+                    localStream = await navigator.mediaDevices.getUserMedia({
+                        video: true,
+                        audio: true
+                    });
+                    
+                    localVideo.srcObject = localStream;
+                    
+                    // Hide pre-connection UI and show controls
+                    preConnection.classList.add('hidden');
+                    controls.classList.remove('hidden');
+                    connectionStatus.querySelector('div').classList.replace('bg-red-500', 'bg-green-500');
+                    connectionStatus.querySelector('span').textContent = 'Connected';
+                    
+                    // Show simulated remote video
+                    setTimeout(() => {
+                        remoteVideo.srcObject = localStream;
+                        remoteVideo.classList.add('mirror');
+                    }, 1500);
+                    
+                } catch (err) {
+                    console.error('Error accessing media devices:', err);
+                    alert('Could not access camera/microphone. Please ensure you have granted permissions.');
+                }
+            });
+            
+            // Emoji panel toggle
+            emojiBtn.addEventListener('click', () => {
+                emojiPanel.style.display = emojiPanel.style.display === 'flex' ? 'none' : 'flex';
+            });
+            
+            // Emoji selection
+            document.querySelectorAll('.emoji-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const emoji = btn.getAttribute('data-emoji');
+                    emojiPopup.textContent = emoji;
+                    emojiPopup.style.display = 'block';
+                    emojiPanel.style.display = 'none';
+                    
+                    setTimeout(() => {
+                        emojiPopup.style.display = 'none';
+                    }, 1500);
+                });
+            });
+            
+            // Media control toggles
+            micToggle.addEventListener('click', () => {
+                const muted = !localStream.getAudioTracks()[0].enabled;
+                localStream.getAudioTracks()[0].enabled = muted;
+                micToggle.textContent = muted ? 'Mute' : 'Unmute';
+            });
+            
+            videoToggle.addEventListener('click', () => {
+                const enabled = !localStream.getVideoTracks()[0].enabled;
+                localStream.getVideoTracks()[0].enabled = enabled;
+                videoToggle.textContent = enabled ? 'Hide Webcam' : 'Show Webcam';
+                localVideo.style.display = enabled ? 'block' : 'none';
+            });
+            
+            // Next stranger button
+            nextBtn.addEventListener('click', () => {
+                alert('Connecting to next stranger...');
+                // In a real app, this would initiate new peer connection
+            });
+            
+            // End call button
+            endBtn.addEventListener('click', () => {
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                }
+                if (remoteVideo.srcObject) {
+                    remoteVideo.srcObject.getTracks().forEach(track => track.stop());
+                }
+                
+                remoteVideo.srcObject = null;
+                localVideo.srcObject = null;
+                
+                controls.classList.add('hidden');
+                preConnection.classList.remove('hidden');
+                connectionStatus.querySelector('div').classList.replace('bg-green-500', 'bg-red-500');
+                connectionStatus.querySelector('span').textContent = 'Disconnected';
+                
+                alert('Call ended. You can start a new call.');
+            });
+        });
+    </script>
+</body>
+</html>
+
